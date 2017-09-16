@@ -1,10 +1,13 @@
 package com.example.shanegifford.loogle;
 
 import android.content.Intent;
+import android.location.LocationManager;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,5 +33,10 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(i);
             }
         });
+
+        LocationManager service = (LocationManager) getSystemService(LOCATION_SERVICE);
+        if (!service.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            Toast.makeText(this, "Please enable GPS", Toast.LENGTH_LONG).show();
+        }
     }
 }
