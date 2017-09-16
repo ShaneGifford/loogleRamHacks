@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "124814151822",
+    "firebase_url": "https://loogle-17841.firebaseio.com",
+    "project_id": "loogle-17841",
+    "storage_bucket": "loogle-17841.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:124814151822:android:71bd0eae7ca14890",
+        "android_client_info": {
+          "package_name": "com.example.shanegifford.loogle"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "124814151822-nkipp7544kb513op97ik40a6tvbl24et.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgUDcpc9FrwFt0pcGw4Bpjf3BNNpuxzI0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
