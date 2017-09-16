@@ -9,6 +9,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -26,11 +29,14 @@ public class MainActivity extends AppCompatActivity {
         });
 
         Button btn_emergency = (Button) findViewById(R.id.button_emergency);
-        btn_filters.setOnClickListener(new View.OnClickListener() {
+        btn_emergency.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent i = new Intent(MainActivity.this, FilterActivity.class);
-                startActivity(i);
+                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                DatabaseReference myRef = database.getReference("message");
+
+                myRef.setValue("Hello, World!");
+                Toast.makeText(MainActivity.this, "Data sent to FB", Toast.LENGTH_LONG).show();
             }
         });
 
