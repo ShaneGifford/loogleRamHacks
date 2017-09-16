@@ -10,4 +10,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
     }
+
+    public void onClickFilters() {
+        //send to Filters activity
+    }
+
+    public void onClickEmergency() {
+        //send to Emergency activity
+    }
 }
