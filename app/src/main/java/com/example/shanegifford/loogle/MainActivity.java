@@ -26,10 +26,39 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+
+class Coordinates {
+
+    private double latitude;
+    private double longitude;
+
+    public Coordinates() {
+        latitude = 0;
+        longitude = 0;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLatitude(double d) {
+        latitude = d;
+    }
+
+    public void setLongitude(double d) {
+        longitude = d;
+    }
+
+}
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,15 +70,15 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseDatabase database;
     private DatabaseReference ref;
     private ValueEventListener toiletFinder;
-    private Geocoder geocoder;
+    private Coordinates locationC;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        latituteField = (TextView) findViewById(R.id.textLat);
-        longitudeField = (TextView) findViewById(R.id.textLong);
+        latituteField = findViewById(R.id.textLat);
+        longitudeField = findViewById(R.id.textLong);
 
         LocationManager service = (LocationManager) getSystemService(LOCATION_SERVICE);
         if (!service.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
@@ -69,34 +98,38 @@ public class MainActivity extends AppCompatActivity {
         toiletFinder = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Location closest = null;
+                Coordinates closest = null;
                 double dist = 0;
                 if (checkSelfPermission("android.permission.ACCESS_FINE_LOCATION") == PackageManager.PERMISSION_GRANTED) {
                     location = locationManager.getLastKnownLocation(provider);
+                    System.out.println(location.getLongitude());
+                    locationC = new Coordinates();
+                    locationC.setLongitude(location.getLongitude());
+                    locationC.setLatitude(location.getLatitude());
                 }
                 if (location != null) {
-                    GenericTypeIndicator<List<Location>> t = new GenericTypeIndicator<List<Location>>() {};
-                    List<Location> locations = dataSnapshot.getValue(t);
-                    while (locations.size() > 0) {
-                        Location coord = locations.get(0);
+                    for (DataSnapshot child : dataSnapshot.getChildren()) {
+                        Coordinates coord = child.getValue(Coordinates.class);
+                        double currentDist = CalculationByDistance(locationC, coord);
                         if (closest != null) {
-                            if (dist > location.distanceTo(coord)) {
+                            if (dist > currentDist) {
                                 closest = coord;
-                                dist = location.distanceTo(coord);
+                                dist = currentDist;
                             }
                         }
                         else {
                             closest = coord;
-                            dist = location.distanceTo(closest);      //replace with better distance formula
+                            dist = currentDist;      //replace with better distance formula
                         }
-                        locations.remove(0);
                     }
                     if (closest != null) {
-                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:" + closest.getLatitude() + "," + closest.getLongitude()));
+                        Toast.makeText(MainActivity.this, closest.getLatitude() + " " + closest.getLongitude(), Toast.LENGTH_LONG).show();
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=" + closest.getLatitude() + "," + closest.getLongitude() + "(Toilet)"));
                         intent.setPackage("com.google.android.apps.maps");
                         if (intent.resolveActivity(getPackageManager()) != null) {
                             startActivity(intent);
                         }
+
                     }
                     else {
                         Toast.makeText(MainActivity.this, "Can't find toilets from server", Toast.LENGTH_LONG).show();
@@ -114,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
         };
 
 
-        Button btn_filters = (Button) findViewById(R.id.button_filters);
+        Button btn_filters = findViewById(R.id.button_filters);
         btn_filters.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -123,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button btn_emergency = (Button) findViewById(R.id.button_emergency);
+        Button btn_emergency = findViewById(R.id.button_emergency);
         btn_emergency.setOnClickListener(new View.OnClickListener() {
              @Override
              public void onClick(View view) {
@@ -133,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
              }
         });
 
-        Button btn_getCoords = (Button) findViewById(R.id.button_getCoords);
+        Button btn_getCoords = findViewById(R.id.button_getCoords);
         btn_getCoords.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -145,14 +178,40 @@ public class MainActivity extends AppCompatActivity {
                     longitudeField.setText("Longitude: " + Double.toString(location.getLongitude()));
 
                     DatabaseReference myRef = database.getReference("coords" + Calendar.getInstance().getTime());
+                    Coordinates coords = new Coordinates();
+                    coords.setLongitude(location.getLongitude());
+                    coords.setLatitude(location.getLatitude());
 
-                    myRef.setValue(location);
+                    myRef.setValue(coords);
 
                     Toast.makeText(MainActivity.this, "Data sent to FB", Toast.LENGTH_LONG).show();
                 }
             }
         });
+    }
 
+    public double CalculationByDistance(Coordinates StartP, Coordinates EndP) {
+        int Radius = 6371;// radius of earth in Km
+        double lat1 = StartP.getLatitude();
+        double lat2 = EndP.getLatitude();
+        double lon1 = StartP.getLongitude();
+        double lon2 = EndP.getLongitude();
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1))
+                * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2)
+                * Math.sin(dLon / 2);
+        double c = 2 * Math.asin(Math.sqrt(a));
+        double valueResult = Radius * c;
+        double km = valueResult / 1;
+        DecimalFormat newFormat = new DecimalFormat("####");
+        int kmInDec = Integer.valueOf(newFormat.format(km));
+        double meter = valueResult % 1000;
+        int meterInDec = Integer.valueOf(newFormat.format(meter));
+        Log.i("Radius Value", "" + valueResult + "   KM  " + kmInDec
+                + " Meter   " + meterInDec);
 
+        return Radius * c;
     }
 }
