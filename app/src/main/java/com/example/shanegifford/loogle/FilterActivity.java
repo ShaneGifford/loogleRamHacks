@@ -58,38 +58,38 @@ public class FilterActivity extends AppCompatActivity {
 
                 final ValueEventListener toiletFilter = new ValueEventListener() {
                     @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        ArrayList<Toilet> possibleToilets = new ArrayList<Toilet>();
-                        for (DataSnapshot child : dataSnapshot.getChildren()) {
-                            Toilet toilet = child.getValue(Toilet.class);
-                            possibleToilets.add(toilet);
+                    public void onDataChange(DataSnapshot dataSnapshot) {               //only called by addListenerForSingleValueEvent
+                        ArrayList<Toilet> possibleToilets = new ArrayList<Toilet>();    //filters all toilets in database against
+                        for (DataSnapshot child : dataSnapshot.getChildren()) {         //all 3 filters, then sends boolean array
+                            Toilet toilet = child.getValue(Toilet.class);               //representing the "passing" toilets to the
+                            possibleToilets.add(toilet);                                //results screen.
                         }
                         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                         Criteria criteria = new Criteria();
                         provider = locationManager.getBestProvider(criteria, false);
                         if (checkSelfPermission("android.permission.ACCESS_FINE_LOCATION") == PackageManager.PERMISSION_GRANTED) {
-                            location = locationManager.getLastKnownLocation(provider);
+                            location = locationManager.getLastKnownLocation(provider);      //gets phone location
                             locationC = new Toilet();
-                            locationC.setLongitude(location.getLongitude());
+                            locationC.setLongitude(location.getLongitude());                //converst location to Toilet class
                             locationC.setLatitude(location.getLatitude());
                         }
-                        boolean[] toiletElims = new boolean[possibleToilets.size()];
+                        boolean[] toiletElims = new boolean[possibleToilets.size()];        //creating bool array to record which toilets pass the filter
                         for (int i = 0; i < toiletElims.length; i++) {
-                            toiletElims[i] = true;
+                            toiletElims[i] = true;                              //initializing array
                         }
                         for (Toilet toilet : possibleToilets) {
-                            if (toilet.cleanliness < filters.cleanliness || (filters.isAccessible && !toilet.isAccessible)) {
+                            if (toilet.cleanliness < filters.cleanliness || (filters.isAccessible && !toilet.isAccessible)) {      //checking against cleanliness and accessibility
                                 toiletElims[possibleToilets.indexOf(toilet)] = false;
                             }
                             else {
-                                double currentDist = toilet.CalculationByDistance(locationC, toilet);
+                                double currentDist = toilet.CalculationByDistance(locationC, toilet);       //test distance to toilet against the max distance filter
                                 if (currentDist > filters.getLatitude()) {
                                     toiletElims[possibleToilets.indexOf(toilet)] = false;
                                 }
                             }
                         }
                         Intent i = new Intent(FilterActivity.this, ResultsActivity.class);
-                        i.putExtra("ToiletArray", toiletElims);
+                        i.putExtra("ToiletArray", toiletElims);                 //packing boolean array into extras to send to results screen
                         startActivity(i);
                     }
                     @Override
@@ -98,7 +98,7 @@ public class FilterActivity extends AppCompatActivity {
                     }
                 };
 
-                FirebaseDatabase.getInstance().getReference().addListenerForSingleValueEvent(toiletFilter);
+                FirebaseDatabase.getInstance().getReference().addListenerForSingleValueEvent(toiletFilter);     //runs the ToiletFilter listener once, on submit button click
             }
         });
     }

@@ -22,7 +22,7 @@ public class EntryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_entry);
         toilet = new Toilet();
         Bundle extras = getIntent().getExtras();
-        toilet.setLatitude(extras.getDouble("lat"));
+        toilet.setLatitude(extras.getDouble("lat"));    //unpack latitude and longitude from extras
         toilet.setLongitude(extras.getDouble("lon"));
 
         final RatingBar stars = findViewById(R.id.rating_stars);
@@ -32,10 +32,10 @@ public class EntryActivity extends AppCompatActivity {
         buttonSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                toilet.cleanliness = stars.getRating();
-                toilet.isAccessible = checkBox.isChecked();
+                toilet.cleanliness = stars.getRating();         //when submit button is pressed, reads other inputs,
+                toilet.isAccessible = checkBox.isChecked();     //sets Toilet parameters based on inputs and sends to the FireBase
 
-                ref = FirebaseDatabase.getInstance().getReference("toilet " + Calendar.getInstance().getTime());
+                ref = FirebaseDatabase.getInstance().getReference("toilet " + Calendar.getInstance().getTime());    //generates unique ID's through system time
                 ref.setValue(toilet);
                 finish();
             }
