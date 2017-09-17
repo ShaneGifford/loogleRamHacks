@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/textView_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Adding New Toilet"
+        android:textSize="28sp"/>
+
+    <TextView
+        android:id="@+id/textView_cleanliness"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cleanliness" />
+
+    <RatingBar
+        android:id="@+id/rating_stars"
+        style="@style/Widget.AppCompat.RatingBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:numStars="5"
+        android:rating="0"
+        android:stepSize="0.5"
+        android:onClick="onClick"/>
+
+    <CheckBox
+        android:id="@+id/checkBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:checked="false"
+        android:text="Handicap Accessible?"
+        android:onClick="onClick"/>
+
+    <Button
+        android:id="@+id/button_submit"
+        android:layout_width="193dp"
+        android:layout_height="wrap_content"
+        android:text="SUBMIT"
+        android:onClick="onClick"/>
+</LinearLayout>

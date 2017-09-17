@@ -10,6 +10,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -32,14 +33,18 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
-class Coordinates {
+class Toilet {
 
     private double latitude;
     private double longitude;
+    public float cleanliness;
+    public boolean isAccessible;
 
-    public Coordinates() {
+    public Toilet() {
         latitude = 0;
         longitude = 0;
+        cleanliness = 1;
+        isAccessible = false;
     }
 
     public double getLatitude() {
@@ -62,23 +67,20 @@ class Coordinates {
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView latituteField;
-    private TextView longitudeField;
     private LocationManager locationManager;
     private String provider;
     private Location location;
     private FirebaseDatabase database;
     private DatabaseReference ref;
     private ValueEventListener toiletFinder;
-    private Coordinates locationC;
+    private Toilet locationC;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        latituteField = findViewById(R.id.textLat);
-        longitudeField = findViewById(R.id.textLong);
+        ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 200);
 
         LocationManager service = (LocationManager) getSystemService(LOCATION_SERVICE);
         if (!service.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
@@ -86,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
         }
         // Get the location manager
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        // Define the criteria how to select the locatioin provider -> use
+        // Define the criteria how to select the location provider -> use
         // default
         Criteria criteria = new Criteria();
         provider = locationManager.getBestProvider(criteria, false);
@@ -98,18 +100,18 @@ public class MainActivity extends AppCompatActivity {
         toiletFinder = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Coordinates closest = null;
+                Toilet closest = null;
                 double dist = 0;
                 if (checkSelfPermission("android.permission.ACCESS_FINE_LOCATION") == PackageManager.PERMISSION_GRANTED) {
                     location = locationManager.getLastKnownLocation(provider);
                     System.out.println(location.getLongitude());
-                    locationC = new Coordinates();
+                    locationC = new Toilet();
                     locationC.setLongitude(location.getLongitude());
                     locationC.setLatitude(location.getLatitude());
                 }
                 if (location != null) {
                     for (DataSnapshot child : dataSnapshot.getChildren()) {
-                        Coordinates coord = child.getValue(Coordinates.class);
+                        Toilet coord = child.getValue(Toilet.class);
                         double currentDist = CalculationByDistance(locationC, coord);
                         if (closest != null) {
                             if (dist > currentDist) {
@@ -123,8 +125,8 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                     if (closest != null) {
-                        Toast.makeText(MainActivity.this, closest.getLatitude() + " " + closest.getLongitude(), Toast.LENGTH_LONG).show();
-                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=" + closest.getLatitude() + "," + closest.getLongitude() + "(Toilet)"));
+//                        Toast.makeText(MainActivity.this, closest.getLatitude() + " " + closest.getLongitude(), Toast.LENGTH_LONG).show();
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=" + closest.getLatitude() + "," + closest.getLongitude()));
                         intent.setPackage("com.google.android.apps.maps");
                         if (intent.resolveActivity(getPackageManager()) != null) {
                             startActivity(intent);
@@ -132,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                     else {
-                        Toast.makeText(MainActivity.this, "Can't find toilets from server", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "Can't find Toilet from server", Toast.LENGTH_LONG).show();
                     }
                 }
                 else {
@@ -174,23 +176,21 @@ public class MainActivity extends AppCompatActivity {
                     location = locationManager.getLastKnownLocation(provider);
                 }
                 if (location != null) {
-                    latituteField.setText("Latitude: " + Double.toString(location.getLatitude()));
-                    longitudeField.setText("Longitude: " + Double.toString(location.getLongitude()));
-
-                    DatabaseReference myRef = database.getReference("coords" + Calendar.getInstance().getTime());
-                    Coordinates coords = new Coordinates();
+                    Toilet coords = new Toilet();
                     coords.setLongitude(location.getLongitude());
                     coords.setLatitude(location.getLatitude());
 
-                    myRef.setValue(coords);
-
-                    Toast.makeText(MainActivity.this, "Data sent to FB", Toast.LENGTH_LONG).show();
+                    Intent i = new Intent(MainActivity.this, EntryActivity.class);
+                    i.putExtra("lat", coords.getLatitude());
+                    i.putExtra("lon", coords.getLongitude());
+                    startActivity(i);
+//                    Toast.makeText(MainActivity.this, "Data sent to FB", Toast.LENGTH_LONG).show();
                 }
             }
         });
     }
 
-    public double CalculationByDistance(Coordinates StartP, Coordinates EndP) {
+    public double CalculationByDistance(Toilet StartP, Toilet EndP) {
         int Radius = 6371;// radius of earth in Km
         double lat1 = StartP.getLatitude();
         double lat2 = EndP.getLatitude();
