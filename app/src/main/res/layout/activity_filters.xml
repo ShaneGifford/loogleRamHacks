@@ -31,7 +31,7 @@
         android:id="@+id/textView5"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Max Distance" />
+        android:text="Max Distance (km)" />
 
     <EditText
         android:id="@+id/editText"
@@ -44,5 +44,6 @@
         android:id="@+id/button_search"
         android:layout_width="136dp"
         android:layout_height="wrap_content"
+        android:onClick="onClick"
         android:text="Search" />
 </LinearLayout>

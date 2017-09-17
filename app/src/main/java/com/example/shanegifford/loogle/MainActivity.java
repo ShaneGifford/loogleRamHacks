@@ -188,7 +188,6 @@ public class MainActivity extends AppCompatActivity {
              public void onClick(View view) {
                  ref = database.getReference();
                  ref.addListenerForSingleValueEvent(toiletFinder);
-                 //use closest toilet return value
              }
         });
 
