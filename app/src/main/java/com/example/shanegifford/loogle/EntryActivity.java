@@ -26,14 +26,7 @@ public class EntryActivity extends AppCompatActivity {
         toilet.setLongitude(extras.getDouble("lon"));
 
         final RatingBar stars = findViewById(R.id.rating_stars);
-
         final CheckBox checkBox = findViewById(R.id.checkBox);
-        checkBox.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-            }
-        });
 
         final Button buttonSubmit = findViewById(R.id.button_submit);
         buttonSubmit.setOnClickListener(new View.OnClickListener() {

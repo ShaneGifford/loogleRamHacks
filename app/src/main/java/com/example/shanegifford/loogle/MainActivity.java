@@ -40,7 +40,7 @@ class Toilet {
     public float cleanliness;
     public boolean isAccessible;
 
-    public Toilet() {
+    public Toilet() {       //Class for storing coordinates and/or toilet info
         latitude = 0;
         longitude = 0;
         cleanliness = 1;
@@ -63,134 +63,7 @@ class Toilet {
         longitude = d;
     }
 
-}
-
-public class MainActivity extends AppCompatActivity {
-
-    private LocationManager locationManager;
-    private String provider;
-    private Location location;
-    private FirebaseDatabase database;
-    private DatabaseReference ref;
-    private ValueEventListener toiletFinder;
-    private Toilet locationC;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 200);
-
-        LocationManager service = (LocationManager) getSystemService(LOCATION_SERVICE);
-        if (!service.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            Toast.makeText(this, "Please enable GPS", Toast.LENGTH_LONG).show();
-        }
-        // Get the location manager
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        // Define the criteria how to select the location provider -> use
-        // default
-        Criteria criteria = new Criteria();
-        provider = locationManager.getBestProvider(criteria, false);
-        location = new Location(provider);
-
-        database = FirebaseDatabase.getInstance();
-
-
-        toiletFinder = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Toilet closest = null;
-                double dist = 0;
-                if (checkSelfPermission("android.permission.ACCESS_FINE_LOCATION") == PackageManager.PERMISSION_GRANTED) {
-                    location = locationManager.getLastKnownLocation(provider);
-                    System.out.println(location.getLongitude());
-                    locationC = new Toilet();
-                    locationC.setLongitude(location.getLongitude());
-                    locationC.setLatitude(location.getLatitude());
-                }
-                if (location != null) {
-                    for (DataSnapshot child : dataSnapshot.getChildren()) {
-                        Toilet coord = child.getValue(Toilet.class);
-                        double currentDist = CalculationByDistance(locationC, coord);
-                        if (closest != null) {
-                            if (dist > currentDist) {
-                                closest = coord;
-                                dist = currentDist;
-                            }
-                        }
-                        else {
-                            closest = coord;
-                            dist = currentDist;      //replace with better distance formula
-                        }
-                    }
-                    if (closest != null) {
-//                        Toast.makeText(MainActivity.this, closest.getLatitude() + " " + closest.getLongitude(), Toast.LENGTH_LONG).show();
-                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=" + closest.getLatitude() + "," + closest.getLongitude()));
-                        intent.setPackage("com.google.android.apps.maps");
-                        if (intent.resolveActivity(getPackageManager()) != null) {
-                            startActivity(intent);
-                        }
-
-                    }
-                    else {
-                        Toast.makeText(MainActivity.this, "Can't find Toilet from server", Toast.LENGTH_LONG).show();
-                    }
-                }
-                else {
-                    Toast.makeText(MainActivity.this, "Can't find location", Toast.LENGTH_LONG).show();
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(MainActivity.this, "Database Error", Toast.LENGTH_LONG).show();
-            }
-        };
-
-
-        Button btn_filters = findViewById(R.id.button_filters);
-        btn_filters.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(MainActivity.this, FilterActivity.class);
-                startActivity(i);
-            }
-        });
-
-        Button btn_emergency = findViewById(R.id.button_emergency);
-        btn_emergency.setOnClickListener(new View.OnClickListener() {
-             @Override
-             public void onClick(View view) {
-                 ref = database.getReference();
-                 ref.addListenerForSingleValueEvent(toiletFinder);
-                 //use closest toilet return value
-             }
-        });
-
-        Button btn_getCoords = findViewById(R.id.button_getCoords);
-        btn_getCoords.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (checkSelfPermission("android.permission.ACCESS_FINE_LOCATION") == PackageManager.PERMISSION_GRANTED) {
-                    location = locationManager.getLastKnownLocation(provider);
-                }
-                if (location != null) {
-                    Toilet coords = new Toilet();
-                    coords.setLongitude(location.getLongitude());
-                    coords.setLatitude(location.getLatitude());
-
-                    Intent i = new Intent(MainActivity.this, EntryActivity.class);
-                    i.putExtra("lat", coords.getLatitude());
-                    i.putExtra("lon", coords.getLongitude());
-                    startActivity(i);
-//                    Toast.makeText(MainActivity.this, "Data sent to FB", Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-    }
-
-    public double CalculationByDistance(Toilet StartP, Toilet EndP) {
+    public double CalculationByDistance(Toilet StartP, Toilet EndP) {       //Calculates distance between two GPScoords, takes curve of eath into account
         int Radius = 6371;// radius of earth in Km
         double lat1 = StartP.getLatitude();
         double lat2 = EndP.getLatitude();
@@ -213,5 +86,130 @@ public class MainActivity extends AppCompatActivity {
                 + " Meter   " + meterInDec);
 
         return Radius * c;
+    }
+
+}
+
+public class MainActivity extends AppCompatActivity {
+
+    private LocationManager locationManager;
+    private String provider;
+    private Location location;
+    private FirebaseDatabase database;
+    private DatabaseReference ref;
+    private ValueEventListener toiletFinder;
+    private Toilet locationC;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 200);   //Permission needed for location services & maps interfacing
+
+        LocationManager service = (LocationManager) getSystemService(LOCATION_SERVICE);
+        if (!service.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            Toast.makeText(this, "Please enable GPS", Toast.LENGTH_LONG).show();
+        }
+        // Get the location manager
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);         //Initialize location manager
+        // Define the criteria how to select the location provider -> use
+        // default
+        Criteria criteria = new Criteria();
+        provider = locationManager.getBestProvider(criteria, false);
+        location = new Location(provider);
+
+        database = FirebaseDatabase.getInstance();          //Instantiate firebase
+
+
+        toiletFinder = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {       //Only called through addListenerForSingleValueEvent, below
+                Toilet closest = null;                                  //Finds closest toilet and sends to google maps as navigation destination
+                double dist = 0;
+                if (checkSelfPermission("android.permission.ACCESS_FINE_LOCATION") == PackageManager.PERMISSION_GRANTED) {
+                    location = locationManager.getLastKnownLocation(provider);      //Grabs GPS location of phone
+                    locationC = new Toilet();
+                    locationC.setLongitude(location.getLongitude());        //Stores coords in Toilet class, for use later
+                    locationC.setLatitude(location.getLatitude());
+                }
+                if (location != null) {
+                    for (DataSnapshot child : dataSnapshot.getChildren()) {     //If phone location found, compare against each toilet in firebase
+                        Toilet coord = child.getValue(Toilet.class);            //Closest toilet to phone location is stored in 'closest'
+                        double currentDist = coord.CalculationByDistance(locationC, coord);
+                        if (closest != null) {
+                            if (dist > currentDist) {
+                                closest = coord;
+                                dist = currentDist;
+                            }
+                        }
+                        else {
+                            closest = coord;            //Initialize first element in database to be closest
+                            dist = currentDist;
+                        }
+                    }
+                    if (closest != null) {
+//                        Toast.makeText(MainActivity.this, closest.getLatitude() + " " + closest.getLongitude(), Toast.LENGTH_LONG).show();
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=" + closest.getLatitude() + "," + closest.getLongitude()));
+                        intent.setPackage("com.google.android.apps.maps");          //Convert coordinates into URI, and send to Maps as navigation point
+                        if (intent.resolveActivity(getPackageManager()) != null) {
+                            startActivity(intent);          //Starts Google Maps app
+                        }
+
+                    }
+                    else {
+                        Toast.makeText(MainActivity.this, "Can't find Toilet from server", Toast.LENGTH_LONG).show();
+                    }
+                }
+                else {
+                    Toast.makeText(MainActivity.this, "Can't find location", Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Toast.makeText(MainActivity.this, "Database Error", Toast.LENGTH_LONG).show();
+            }
+        };
+
+
+        Button btn_filters = findViewById(R.id.angry_btn);
+        btn_filters.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(MainActivity.this, FilterActivity.class);     //Click filter button, go to filter screen
+                startActivity(i);
+            }
+        });
+
+        Button btn_emergency = findViewById(R.id.angry_btn2);
+        btn_emergency.setOnClickListener(new View.OnClickListener() {
+             @Override
+             public void onClick(View view) {
+                 ref = database.getReference();                 //Click emergency button, run toiletFinder above
+                 ref.addListenerForSingleValueEvent(toiletFinder);
+             }
+        });
+
+        Button btn_getCoords = findViewById(R.id.angry_btn3);
+        btn_getCoords.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (checkSelfPermission("android.permission.ACCESS_FINE_LOCATION") == PackageManager.PERMISSION_GRANTED) {      //Click New toilet button, get current coords
+                    location = locationManager.getLastKnownLocation(provider);                                                  //and go to new toilet screen
+                }
+                if (location != null) {
+                    Toilet coords = new Toilet();
+                    coords.setLongitude(location.getLongitude());       //converting coordinates to Toilet class
+                    coords.setLatitude(location.getLatitude());
+
+                    Intent i = new Intent(MainActivity.this, EntryActivity.class);
+                    i.putExtra("lat", coords.getLatitude());             //store latitude and longitude as extras in intent then send to new toilet screen
+                    i.putExtra("lon", coords.getLongitude());
+                    startActivity(i);
+//                    Toast.makeText(MainActivity.this, "Data sent to FB", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
     }
 }
