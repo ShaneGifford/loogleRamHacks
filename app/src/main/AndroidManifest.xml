@@ -5,7 +5,7 @@
     <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="26" />
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/bathroom"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"

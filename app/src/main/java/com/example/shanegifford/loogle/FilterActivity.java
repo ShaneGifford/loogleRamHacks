@@ -41,20 +41,20 @@ public class FilterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_filters);
 
-        filters = new Toilet();
+        filters = new Toilet();         //Contains the values we will test our database against
 
         final RatingBar starsMin = findViewById(R.id.stars_min);
-        final EditText editText = findViewById(R.id.editText);
+        final EditText editText = findViewById(R.id.editText);             //connect screen components to code objects
         final CheckBox accessCheck = findViewById(R.id.access_check);
 
-        final Button buttonSearch = findViewById(R.id.button_search);
+        final Button buttonSearch = findViewById(R.id.button_search);       //when search button is clicked,
         buttonSearch.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                filters.cleanliness = starsMin.getRating();
+            public void onClick(View view) {                         //read the inputs (stars, checkbox, text input)
+                filters.cleanliness = starsMin.getRating();                 //and send the values to filters to test against
                 filters.isAccessible = accessCheck.isChecked();
                 String inputString = editText.getText().toString();
-                filters.setLatitude(Double.parseDouble((inputString.length() == 0 ? "100" : inputString) + ".0"));
+                filters.setLatitude(Double.parseDouble((inputString.length() == 0 ? "100" : inputString) + ".0"));  //filters.latitude holds max distance to toilet, default of 100 km
 
                 final ValueEventListener toiletFilter = new ValueEventListener() {
                     @Override
