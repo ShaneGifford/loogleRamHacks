@@ -23,9 +23,13 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -71,9 +75,10 @@ public class MainActivity extends AppCompatActivity {
                     location = locationManager.getLastKnownLocation(provider);
                 }
                 if (location != null) {
-                    long numToilets = dataSnapshot.getChildrenCount();
-                    for (int i = 0; i < numToilets; i++) {
-                        Location coord = toilet.getValue(Location.class)[i];
+                    GenericTypeIndicator<List<Location>> t = new GenericTypeIndicator<List<Location>>() {};
+                    List<Location> locations = dataSnapshot.getValue(t);
+                    while (locations.size() > 0) {
+                        Location coord = locations.get(0);
                         if (closest != null) {
                             if (dist > location.distanceTo(coord)) {
                                 closest = coord;
@@ -82,8 +87,9 @@ public class MainActivity extends AppCompatActivity {
                         }
                         else {
                             closest = coord;
-                            dist = location.distanceTo(coord);      //replace with better distance formula
+                            dist = location.distanceTo(closest);      //replace with better distance formula
                         }
+                        locations.remove(0);
                     }
                     if (closest != null) {
                         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:" + closest.getLatitude() + "," + closest.getLongitude()));
