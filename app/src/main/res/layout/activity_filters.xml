@@ -7,5 +7,42 @@
         android:id="@+id/textView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="This is the filters screen." />
+        android:text="Filters"
+        android:textSize="36sp"/>
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Min. Cleanliness" />
+
+    <RatingBar
+        android:id="@+id/stars_min"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <CheckBox
+        android:id="@+id/access_check"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Accessibility Needed" />
+
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Max Distance" />
+
+    <EditText
+        android:id="@+id/editText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="numberSigned|numberDecimal"/>
+
+    <Button
+        android:id="@+id/button_search"
+        android:layout_width="136dp"
+        android:layout_height="wrap_content"
+        android:text="Search" />
 </LinearLayout>

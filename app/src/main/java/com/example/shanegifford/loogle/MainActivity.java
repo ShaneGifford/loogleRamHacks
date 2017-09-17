@@ -63,6 +63,31 @@ class Toilet {
         longitude = d;
     }
 
+    static public double CalculationByDistance(Toilet StartP, Toilet EndP) {
+        int Radius = 6371;// radius of earth in Km
+        double lat1 = StartP.getLatitude();
+        double lat2 = EndP.getLatitude();
+        double lon1 = StartP.getLongitude();
+        double lon2 = EndP.getLongitude();
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1))
+                * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2)
+                * Math.sin(dLon / 2);
+        double c = 2 * Math.asin(Math.sqrt(a));
+        double valueResult = Radius * c;
+        double km = valueResult / 1;
+        DecimalFormat newFormat = new DecimalFormat("####");
+        int kmInDec = Integer.valueOf(newFormat.format(km));
+        double meter = valueResult % 1000;
+        int meterInDec = Integer.valueOf(newFormat.format(meter));
+        Log.i("Radius Value", "" + valueResult + "   KM  " + kmInDec
+                + " Meter   " + meterInDec);
+
+        return Radius * c;
+    }
+
 }
 
 public class MainActivity extends AppCompatActivity {
@@ -104,7 +129,6 @@ public class MainActivity extends AppCompatActivity {
                 double dist = 0;
                 if (checkSelfPermission("android.permission.ACCESS_FINE_LOCATION") == PackageManager.PERMISSION_GRANTED) {
                     location = locationManager.getLastKnownLocation(provider);
-                    System.out.println(location.getLongitude());
                     locationC = new Toilet();
                     locationC.setLongitude(location.getLongitude());
                     locationC.setLatitude(location.getLatitude());
@@ -112,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
                 if (location != null) {
                     for (DataSnapshot child : dataSnapshot.getChildren()) {
                         Toilet coord = child.getValue(Toilet.class);
-                        double currentDist = CalculationByDistance(locationC, coord);
+                        double currentDist = Toilet.CalculationByDistance(locationC, coord);
                         if (closest != null) {
                             if (dist > currentDist) {
                                 closest = coord;
@@ -149,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
         };
 
 
-        Button btn_filters = findViewById(R.id.button_filters);
+        Button btn_filters = findViewById(R.id.angry_btn);
         btn_filters.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -158,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button btn_emergency = findViewById(R.id.button_emergency);
+        Button btn_emergency = findViewById(R.id.angry_btn2);
         btn_emergency.setOnClickListener(new View.OnClickListener() {
              @Override
              public void onClick(View view) {
@@ -168,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
              }
         });
 
-        Button btn_getCoords = findViewById(R.id.button_getCoords);
+        Button btn_getCoords = findViewById(R.id.angry_btn3);
         btn_getCoords.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -188,30 +212,5 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-    }
-
-    public double CalculationByDistance(Toilet StartP, Toilet EndP) {
-        int Radius = 6371;// radius of earth in Km
-        double lat1 = StartP.getLatitude();
-        double lat2 = EndP.getLatitude();
-        double lon1 = StartP.getLongitude();
-        double lon2 = EndP.getLongitude();
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(Math.toRadians(lat1))
-                * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2)
-                * Math.sin(dLon / 2);
-        double c = 2 * Math.asin(Math.sqrt(a));
-        double valueResult = Radius * c;
-        double km = valueResult / 1;
-        DecimalFormat newFormat = new DecimalFormat("####");
-        int kmInDec = Integer.valueOf(newFormat.format(km));
-        double meter = valueResult % 1000;
-        int meterInDec = Integer.valueOf(newFormat.format(meter));
-        Log.i("Radius Value", "" + valueResult + "   KM  " + kmInDec
-                + " Meter   " + meterInDec);
-
-        return Radius * c;
     }
 }
