@@ -3,9 +3,12 @@ package com.example.shanegifford.loogle;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Address;
 import android.location.Criteria;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -34,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseDatabase database;
     private DatabaseReference ref;
     private ValueEventListener toiletFinder;
+    private Geocoder geocoder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +65,40 @@ public class MainActivity extends AppCompatActivity {
         toiletFinder = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                //Calculate closest toilet
+                Location closest = null;
+                double dist = 0;
+                if (checkSelfPermission("android.permission.ACCESS_FINE_LOCATION") == PackageManager.PERMISSION_GRANTED) {
+                    location = locationManager.getLastKnownLocation(provider);
+                }
+                if (location != null) {
+                    long numToilets = dataSnapshot.getChildrenCount();
+                    for (int i = 0; i < numToilets; i++) {
+                        Location coord = toilet.getValue(Location.class)[i];
+                        if (closest != null) {
+                            if (dist > location.distanceTo(coord)) {
+                                closest = coord;
+                                dist = location.distanceTo(coord);
+                            }
+                        }
+                        else {
+                            closest = coord;
+                            dist = location.distanceTo(coord);      //replace with better distance formula
+                        }
+                    }
+                    if (closest != null) {
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:" + closest.getLatitude() + "," + closest.getLongitude()));
+                        intent.setPackage("com.google.android.apps.maps");
+                        if (intent.resolveActivity(getPackageManager()) != null) {
+                            startActivity(intent);
+                        }
+                    }
+                    else {
+                        Toast.makeText(MainActivity.this, "Can't find toilets from server", Toast.LENGTH_LONG).show();
+                    }
+                }
+                else {
+                    Toast.makeText(MainActivity.this, "Can't find location", Toast.LENGTH_LONG).show();
+                }
             }
 
             @Override
@@ -84,7 +121,9 @@ public class MainActivity extends AppCompatActivity {
         btn_emergency.setOnClickListener(new View.OnClickListener() {
              @Override
              public void onClick(View view) {
-
+                 ref = database.getReference();
+                 ref.addListenerForSingleValueEvent(toiletFinder);
+                 //use closest toilet return value
              }
         });
 
