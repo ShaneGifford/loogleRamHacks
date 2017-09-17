@@ -63,7 +63,7 @@ class Toilet {
         longitude = d;
     }
 
-    static public double CalculationByDistance(Toilet StartP, Toilet EndP) {
+    public double CalculationByDistance(Toilet StartP, Toilet EndP) {
         int Radius = 6371;// radius of earth in Km
         double lat1 = StartP.getLatitude();
         double lat2 = EndP.getLatitude();
@@ -136,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
                 if (location != null) {
                     for (DataSnapshot child : dataSnapshot.getChildren()) {
                         Toilet coord = child.getValue(Toilet.class);
-                        double currentDist = Toilet.CalculationByDistance(locationC, coord);
+                        double currentDist = coord.CalculationByDistance(locationC, coord);
                         if (closest != null) {
                             if (dist > currentDist) {
                                 closest = coord;

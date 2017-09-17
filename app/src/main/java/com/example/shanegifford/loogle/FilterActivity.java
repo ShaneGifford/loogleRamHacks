@@ -54,7 +54,7 @@ public class FilterActivity extends AppCompatActivity {
                 filters.cleanliness = starsMin.getRating();
                 filters.isAccessible = accessCheck.isChecked();
                 String inputString = editText.getText().toString();
-                filters.setLatitude(Double.parseDouble((inputString.length() == 0 ? "0" : inputString) + ".0"));
+                filters.setLatitude(Double.parseDouble((inputString.length() == 0 ? "100" : inputString) + ".0"));
 
                 final ValueEventListener toiletFilter = new ValueEventListener() {
                     @Override
@@ -74,23 +74,20 @@ public class FilterActivity extends AppCompatActivity {
                             locationC.setLatitude(location.getLatitude());
                         }
                         boolean[] toiletElims = new boolean[possibleToilets.size()];
-                        for (boolean b : toiletElims) {
-                            b = true;
+                        for (int i = 0; i < toiletElims.length; i++) {
+                            toiletElims[i] = true;
                         }
                         for (Toilet toilet : possibleToilets) {
                             if (toilet.cleanliness < filters.cleanliness || (filters.isAccessible && !toilet.isAccessible)) {
                                 toiletElims[possibleToilets.indexOf(toilet)] = false;
-                                possibleToilets.remove(toilet);
                             }
                             else {
-                                double currentDist = Toilet.CalculationByDistance(locationC, toilet);
+                                double currentDist = toilet.CalculationByDistance(locationC, toilet);
                                 if (currentDist > filters.getLatitude()) {
                                     toiletElims[possibleToilets.indexOf(toilet)] = false;
-                                    possibleToilets.remove(toilet);
                                 }
                             }
                         }
-                        toilets = possibleToilets.toArray(new Toilet[possibleToilets.size()]);
                         Intent i = new Intent(FilterActivity.this, ResultsActivity.class);
                         i.putExtra("ToiletArray", toiletElims);
                         startActivity(i);
