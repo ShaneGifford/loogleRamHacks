@@ -9,14 +9,18 @@ import android.location.LocationManager;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextClock;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.Calendar;
 
@@ -28,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
     private String provider;
     private Location location;
     private FirebaseDatabase database;
+    private DatabaseReference ref;
+    private ValueEventListener toiletFinder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +42,6 @@ public class MainActivity extends AppCompatActivity {
 
         latituteField = (TextView) findViewById(R.id.textLat);
         longitudeField = (TextView) findViewById(R.id.textLong);
-
 
         LocationManager service = (LocationManager) getSystemService(LOCATION_SERVICE);
         if (!service.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
@@ -51,6 +56,19 @@ public class MainActivity extends AppCompatActivity {
         location = new Location(provider);
 
         database = FirebaseDatabase.getInstance();
+
+
+        toiletFinder = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                //Calculate closest toilet
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Toast.makeText(MainActivity.this, "Database Error", Toast.LENGTH_LONG).show();
+            }
+        };
 
 
         Button btn_filters = (Button) findViewById(R.id.button_filters);
@@ -84,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
                     DatabaseReference myRef = database.getReference("coords" + Calendar.getInstance().getTime());
 
                     myRef.setValue(location);
+
                     Toast.makeText(MainActivity.this, "Data sent to FB", Toast.LENGTH_LONG).show();
                 }
             }
